@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline';" />
+  <title>Floaty</title>
+  <style>
+    :root {
+      --bg: #1f2125;
+      --bg-hover: #34373d;
+      --fg: #e6e8eb;
+      --muted: #9aa0a6;
+      --accent: #4c6ef5;
+      --field: #2b2e33;
+      --border: #3a3d43;
+    }
+
+    /* Toolbar color themes (selectable in Settings) */
+    body[data-theme="dark"]   { --bg:#1f2125; --bg-hover:#34373d; --fg:#e6e8eb; --muted:#9aa0a6; --field:#2b2e33; --border:#3a3d43; }
+    body[data-theme="white"]  { --bg:#ffffff; --bg-hover:#eef0f2; --fg:#1f2125; --muted:#6b7077; --field:#f3f4f6; --border:#dcdfe3; }
+    body[data-theme="pink"]   { --bg:#ffdde9; --bg-hover:#ffc6db; --fg:#5a2a3a; --muted:#a8707f; --field:#ffffff; --border:#f3c6d6; }
+    body[data-theme="sky"]    { --bg:#dcefff; --bg-hover:#c4e2ff; --fg:#234055; --muted:#6f8ea3; --field:#ffffff; --border:#c1dbf0; }
+    body[data-theme="purple"] { --bg:#e9e0ff; --bg-hover:#d8caff; --fg:#3d2a5a; --muted:#8676a3; --field:#ffffff; --border:#d2c4f0; }
+    body[data-theme="green"]  { --bg:#dcf5e3; --bg-hover:#c6edd2; --fg:#234534; --muted:#6f9d82; --field:#ffffff; --border:#c1e2cb; }
+    body[data-theme="ivory"]  { --bg:#f8f4ea; --bg-hover:#ece5d4; --fg:#4a4636; --muted:#9c947b; --field:#ffffff; --border:#e4ddca; }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      user-select: none;
+    }
+
+    /* Whole toolbar is a drag handle so the window can be moved. */
+    .toolbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 6px;
+      -webkit-app-region: drag;
+    }
+
+    /* Interactive elements must opt out of dragging. */
+    button, input { -webkit-app-region: no-drag; }
+
+    .btn {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--fg);
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .btn:hover { background: var(--bg-hover); }
+    .btn:disabled { color: #585c63; cursor: default; background: transparent; }
+
+    .btn.active { color: var(--accent); }
+
+    .address {
+      flex: 0 1 200px;    /* fixed-ish width, never grows to fill the bar */
+      height: 28px;
+      min-width: 80px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      background: var(--field);
+      color: var(--fg);
+      font-size: 12px;
+      outline: none;
+    }
+    .address:focus { border-color: var(--accent); }
+    .address::placeholder { color: var(--muted); }
+
+    /* flexible empty area -> gives room to grab & drag the window */
+    .spacer { flex: 1 1 auto; min-width: 24px; height: 100%; }
+
+    /* ---- Settings panel ---- */
+    .settings {
+      position: absolute;
+      top: 44px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 20px;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .settings.open { display: flex; }
+
+    .settings h2 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+    .settings label { font-size: 12px; color: var(--muted); }
+
+    .settings input,
+    .settings select {
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--field);
+      color: var(--fg);
+      font-size: 13px;
+      outline: none;
+    }
+    .settings input:focus,
+    .settings select:focus { border-color: var(--accent); }
+
+    .settings .hint { font-size: 11px; color: var(--muted); }
+
+    .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+    .action {
+      height: 34px;
+      padding: 0 18px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      transition: filter 0.12s ease, background 0.12s ease;
+    }
+    .action:hover { filter: brightness(1.08); }
+    .action:active { transform: translateY(1px); }
+    .action.primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(76, 110, 245, 0.35);
+    }
+    /* dimmed until the user actually changes a setting */
+    .action.primary:disabled {
+      background: var(--bg-hover);
+      color: var(--muted);
+      box-shadow: none;
+      cursor: default;
+    }
+    .action:disabled:hover { filter: none; }
+    .action:disabled:active { transform: none; }
+    .action.ghost {
+      background: transparent;
+      color: var(--fg);
+      border-color: var(--border);
+    }
+    .action.ghost:hover { background: var(--bg-hover); filter: none; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button id="back"    class="btn" title="Back">‹</button>
+    <button id="forward" class="btn" title="Forward">›</button>
+    <button id="reload"  class="btn" title="Reload">⟳</button>
+    <button id="home"    class="btn" title="Home">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 11l9-8 9 8" />
+        <path d="M5 10v10h14V10" />
+      </svg>
+    </button>
+
+    <input id="address" class="address" type="text"
+           placeholder="Enter a URL or search…" spellcheck="false" />
+
+    <!-- empty, draggable area between the address bar and the right buttons -->
+    <div class="spacer"></div>
+
+    <button id="settings" class="btn" title="Settings">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    </button>
+    <button id="minimize" class="btn" title="Minimize">—</button>
+    <button id="close"    class="btn" title="Close">✕</button>
+  </div>
+
+  <div id="settingsPanel" class="settings">
+    <h2>Settings</h2>
+    <label for="homeInput">Default home page</label>
+    <input id="homeInput" type="text" placeholder="https://www.youtube.com" spellcheck="false" />
+    <div class="hint">Loaded when you press the Home button.</div>
+
+    <label for="ratioSelect">Window ratio (width : height)</label>
+    <select id="ratioSelect">
+      <option value="16:9">16 : 9  (wide)</option>
+      <option value="4:3">4 : 3</option>
+      <option value="1:1">1 : 1  (square)</option>
+      <option value="3:4">3 : 4  (tall)</option>
+      <option value="9:16">9 : 16  (tall)</option>
+    </select>
+
+    <label for="launchSelect">Start when the computer turns on</label>
+    <select id="launchSelect">
+      <option value="off">Off</option>
+      <option value="on">On</option>
+    </select>
+
+    <label for="themeSelect">Toolbar color</label>
+    <select id="themeSelect">
+      <option value="dark">Black</option>
+      <option value="white">White</option>
+      <option value="pink">Light pink</option>
+      <option value="sky">Light sky blue</option>
+      <option value="purple">Light purple</option>
+      <option value="green">Light green</option>
+      <option value="ivory">Ivory</option>
+    </select>
+
+    <div class="row">
+      <button id="settingsCancel" class="action ghost">Cancel</button>
+      <button id="settingsSave" class="action primary">Save</button>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

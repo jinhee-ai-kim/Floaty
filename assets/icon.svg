@@ -1,0 +1,46 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6E8BFF"/>
+      <stop offset="1" stop-color="#9A5CFF"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#EEF1F8"/>
+    </linearGradient>
+    <filter id="winShadow" x="-40%" y="-40%" width="180%" height="200%">
+      <feDropShadow dx="0" dy="34" stdDeviation="34" flood-color="#1A1340" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+
+  <!-- app background -->
+  <rect x="0" y="0" width="1024" height="1024" rx="232" fill="url(#bg)"/>
+
+  <!-- soft highlight -->
+  <ellipse cx="320" cy="250" rx="430" ry="300" fill="#FFFFFF" opacity="0.10"/>
+
+  <!-- floating shadow beneath the window -->
+  <ellipse cx="512" cy="812" rx="208" ry="34" fill="#1A1340" opacity="0.22"/>
+
+  <!-- floating mini browser window -->
+  <g filter="url(#winShadow)">
+    <rect x="236" y="250" width="552" height="430" rx="60" fill="#FFFFFF"/>
+    <!-- title bar -->
+    <path d="M236 310 a60 60 0 0 1 60 -60 h432 a60 60 0 0 1 60 60 v36 h-552 z" fill="url(#bar)"/>
+    <!-- traffic-light dots -->
+    <circle cx="300" cy="300" r="15" fill="#FF6B6B"/>
+    <circle cx="350" cy="300" r="15" fill="#FFC53D"/>
+    <circle cx="400" cy="300" r="15" fill="#3DD68C"/>
+    <!-- address pill -->
+    <rect x="288" y="392" width="448" height="52" rx="26" fill="#EDF1F9"/>
+    <circle cx="320" cy="418" r="13" fill="#C7D2EA"/>
+    <!-- content lines -->
+    <rect x="288" y="488" width="360" height="30" rx="15" fill="#E3E9F5"/>
+    <rect x="288" y="546" width="300" height="30" rx="15" fill="#E9EEF8"/>
+    <rect x="288" y="604" width="200" height="30" rx="15" fill="#EEF2FA"/>
+  </g>
+
+  <!-- "always on top" upward cue -->
+  <path d="M468 196 l44 -44 l44 44" fill="none" stroke="#FFFFFF" stroke-width="22"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+</svg>

@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('floaty', {
   setTheme: (theme) => ipcRenderer.send('set-theme', theme),
   getLaunch: () => ipcRenderer.sendSync('get-launch'),
   setLaunch: (on) => ipcRenderer.send('set-launch', on),
+  openExternal: (url) => ipcRenderer.send('open-external', url),
   openSettings: () => ipcRenderer.send('open-settings'),
   closeSettings: () => ipcRenderer.send('close-settings'),
 

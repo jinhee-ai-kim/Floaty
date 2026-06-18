@@ -101,6 +101,7 @@
       display: none;
       flex-direction: column;
       gap: 12px;
+      overflow-y: auto;     /* scroll when the window is short */
     }
     .settings.open { display: flex; }
 
@@ -124,6 +125,22 @@
     .settings .hint { font-size: 11px; color: var(--muted); }
 
     .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+
+    /* maker credit pinned at the very bottom of the panel */
+    .credit {
+      margin-top: auto;
+      padding-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .credit a {
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+    }
+    .credit a:hover { text-decoration: underline; }
 
     .action {
       height: 34px;
@@ -227,6 +244,11 @@
     <div class="row">
       <button id="settingsCancel" class="action ghost">Cancel</button>
       <button id="settingsSave" class="action primary">Save</button>
+    </div>
+
+    <div class="credit">
+      Made by <strong>cacheton.code</strong><br />
+      Instagram <a id="creditLink" data-href="https://instagram.com/cacheton.code">@cacheton.code</a>
     </div>
   </div>
 

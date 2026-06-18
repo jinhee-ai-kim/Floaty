@@ -1,4 +1,4 @@
-const { app, BaseWindow, WebContentsView, ipcMain } = require('electron');
+const { app, BaseWindow, WebContentsView, ipcMain, shell } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 
@@ -335,6 +335,11 @@ ipcMain.on('set-theme', (_e, theme) => { setTheme(theme); });
 ipcMain.on('get-launch', (e) => { e.returnValue = getLaunchAtLogin(); });
 
 ipcMain.on('set-launch', (_e, on) => { setLaunchAtLogin(on); });
+
+// Open external links (e.g. the credit) in the user's default browser.
+ipcMain.on('open-external', (_e, url) => {
+  if (typeof url === 'string' && /^https?:\/\//i.test(url)) shell.openExternal(url);
+});
 
 ipcMain.on('open-settings', () => {
   if (!windowAlive()) return;

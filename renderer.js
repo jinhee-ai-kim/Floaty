@@ -67,6 +67,11 @@ function closeSettings() {
 
 $('settings').addEventListener('click', openSettings);
 $('settingsCancel').addEventListener('click', closeSettings);
+
+// Open the maker credit (Instagram) in the system browser.
+$('creditLink').addEventListener('click', () => {
+  window.floaty.openExternal($('creditLink').dataset.href);
+});
 saveBtn.addEventListener('click', () => {
   if (saveBtn.disabled) return;        // nothing changed
   const value = homeInput.value.trim();

@@ -249,7 +249,13 @@ function createWindow() {
   // Wire up content events -> toolbar + persistence
   const wc = contentView.webContents;
   wc.on('did-navigate', (_e, url) => { saveLastUrl(url); sendNavState(); });
-  wc.on('did-navigate-in-page', () => sendNavState());
+  // YouTube & other single-page apps change the URL without a full reload
+  // (history API), firing this instead of `did-navigate`. Save it too so the
+  // last video/page is restored on next launch.
+  wc.on('did-navigate-in-page', (_e, url, isMainFrame) => {
+    if (isMainFrame) saveLastUrl(url);
+    sendNavState();
+  });
   wc.on('did-start-loading', sendNavState);
   wc.on('did-stop-loading', sendNavState);
   wc.on('page-title-updated', sendNavState);
@@ -363,14 +369,30 @@ ipcMain.on('close', () => {
 });
 
 // ---- Lifecycle -------------------------------------------------------------
-app.whenReady().then(() => {
-  createWindow();
+// Only allow a single running instance. A second launch just focuses the
+// existing window (this also avoids the Chromium "cache is locked" warnings
+// that appear when two instances share the same cache folder).
+const gotTheLock = app.requestSingleInstanceLock();
 
-  app.on('activate', () => {
-    if (BaseWindow.getAllWindows().length === 0) createWindow();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (baseWindow) {
+      if (baseWindow.isMinimized()) baseWindow.restore();
+      baseWindow.focus();
+    }
   });
-});
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+  app.whenReady().then(() => {
+    createWindow();
+
+    app.on('activate', () => {
+      if (BaseWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
+  });
+}
